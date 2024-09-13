@@ -6,6 +6,8 @@ github.com/hailong-bot/gormx v1.0.1 h1:NkJJHGDR+INsi4Eg6gQahaaSUGq5fAMrEmNMy6BeG
 github.com/hailong-bot/gormx v1.0.1/go.mod h1:KhGqnN+O3b6xEdRbzdtjMK2fPH1i62BdzTJx35tqXb4=
 github.com/hailong-bot/gormx v1.0.2 h1:QdEkgLi710ftKLsx74fLxTZKgkE+0Tmyi/v3KnTFN50=
 github.com/hailong-bot/gormx v1.0.2/go.mod h1:KhGqnN+O3b6xEdRbzdtjMK2fPH1i62BdzTJx35tqXb4=
+github.com/hailong-bot/gormx v1.0.3 h1:wkWK7+7YzM4YPUvRqWIaQ+CigVsQD32SE6NIjzxWlP4=
+github.com/hailong-bot/gormx v1.0.3/go.mod h1:Le1hHNfI3WfVVV8AExc+zZsomYuJrpCLypxUl6DL28I=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.5 h1:/o9tlHleP7gOFmsnYNz3RGnqzefHA47wQpKrrdTIwXQ=

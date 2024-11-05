@@ -199,3 +199,91 @@ func (m *ModelBase) List(db *gorm.DB, offset int, limit int, sortField string, s
 	}
 	return result, nil
 }
+
+func (m *ModelBase) ListAll(db *gorm.DB, sortField string, sort gormx.Sort, where string, values ...interface{}) (gormx.DataObjecterList, error) {
+	var result gormx.DataObjecterList
+
+	// 1.生成该对象
+	dataObjecterType := reflect.TypeOf(m.DataObjecter)
+	dataObjecterPtrType := dataObjecterType
+	for dataObjecterPtrType.Kind() == reflect.Ptr && dataObjecterPtrType.Elem().Kind() == reflect.Ptr {
+		dataObjecterPtrType = dataObjecterPtrType.Elem()
+	}
+
+	// 2.查找所有
+	// 2.1.查找到该列表
+	resultValue := reflect.New(reflect.SliceOf(dataObjecterPtrType))
+	resultSlice := resultValue.Interface()
+	sortSQL := sortField + " " + sort.ToString()
+	if err := db.Order(sortSQL).
+		Model(m.DataObjecter).Where(where, values...).
+		Find(resultSlice).Error; err != nil {
+		return nil, errors.WithStack(err)
+	}
+	// 2.2.将结果做类型转换，转为 dataObjecterType
+	for i := 0; i < resultValue.Elem().Len(); i++ {
+		result = append(
+			result,
+			resultValue.Elem().Index(i).Interface().(gormx.DataObjecter),
+		)
+	}
+	// 3.为生成的对象设置 DataObjecter 值
+	for i := range result {
+		dataObjecterValue := reflect.ValueOf(result[i])
+		if dataObjecterValue.Elem().Kind() == reflect.Struct {
+			doerField := dataObjecterValue.Elem().FieldByName("DataObjecter")
+			if doerField.IsValid() && doerField.CanSet() {
+				doerField.Set(dataObjecterValue)
+			}
+		}
+	}
+	return result, nil
+}
+
+func (m *ModelBase) Exist(db *gorm.DB, where string, values ...interface{}) (bool, error) {
+	t := reflect.TypeOf(m.DataObjecter)
+	var value reflect.Value
+	if t.Kind() == reflect.Ptr {
+		value = reflect.New(t.Elem())
+	}
+
+	if err := db.Model(m.DataObjecter).Where(where, values...).
+		Take(value).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, errors.WithStack(err)
+	}
+	return true, nil
+}
+
+func (m *ModelBase) Count(db *gorm.DB, where string, values ...interface{}) (int64, error) {
+	var count int64
+	if err := db.Model(m.DataObjecter).Where(where, values...).
+		Count(&count).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, nil
+		}
+		return 0, errors.WithStack(err)
+	}
+	return count, nil
+}
+
+func (m *ModelBase) DeleteBatch(db *gorm.DB, where string, values ...interface{}) error {
+	if err := db.Where(where, values...).Delete(m.DataObjecter).Error; err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
+func (m *ModelBase) UpdateBatch(db *gorm.DB, updateParams gormx.UPO, where string, values ...interface{}) error {
+	if err := db.Model(m.DataObjecter).Where(where, values...).
+		Updates(map[string]interface{}(updateParams)).Error; err != nil {
+		if mySQLDriverErr, ok := err.(*mysql.MySQLError); ok &&
+			mySQLDriverErr.Number == DuplicateEntryErrCode {
+			return errors.WithStack(ErrDuplicateKey)
+		}
+		return errors.WithStack(err)
+	}
+	return nil
+}
